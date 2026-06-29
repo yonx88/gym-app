@@ -1,0 +1,13 @@
+{
+  "name": "gym-app",
+  "version": "1.0.0",
+  "description": "تطبيق متابعة تمارين النادي — واجهة Angular + سيرفر Node.js على خدمة واحدة",
+  "private": true,
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build && npm --prefix backend install && node scripts/copy-frontend.js",
+    "start": "node backend/src/server.js"
+  }
+}
