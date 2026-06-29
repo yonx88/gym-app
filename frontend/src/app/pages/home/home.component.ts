@@ -66,18 +66,17 @@ interface ExerciseRow extends Exercise {
 
           <div class="mt-16" style="display:flex; flex-direction:column; gap:10px;">
             @for (ex of rows(); track ex.id) {
-              <div class="card">
-                <div class="row-between" (click)="openExercise(ex.id)" style="cursor:pointer;">
-                  <div class="row gap-12">
-                    <div style="width:46px;height:46px;border-radius:12px;background:var(--surface-2);
-                                display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;">
+              <div class="card ex-card">
+                <div class="ex-head" (click)="openExercise(ex.id)">
+                  <div class="row gap-12" style="min-width:0;">
+                    <div class="ex-thumb">
                       @if (ex.image_path) {
                         <img [src]="imgUrl(ex.image_path)" style="width:100%;height:100%;object-fit:cover;" />
                       } @else {
                         <span style="font-size:20px;">🏋️</span>
                       }
                     </div>
-                    <div>
+                    <div style="min-width:0;">
                       <div style="font-weight:700;">{{ ex.name }}</div>
                       @if (ex.last_log) {
                         <div class="muted" style="font-size:12px; margin-top:2px;">
@@ -87,6 +86,12 @@ interface ExerciseRow extends Exercise {
                       } @else {
                         <div class="muted" style="font-size:12px; margin-top:2px;">أول مرة تسويه</div>
                       }
+                      <div class="detail-hint">
+                        عرض الصورة والتفاصيل
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                   <button class="check-btn" [class.checked]="ex.checked" (click)="toggleCheck(ex, $event)">
@@ -127,6 +132,22 @@ interface ExerciseRow extends Exercise {
     </div>
   `,
   styles: [`
+    .ex-card { padding: 14px; }
+    .ex-head {
+      display:flex; align-items:center; justify-content:space-between;
+      cursor:pointer; border-radius: 12px; margin: -6px; padding: 6px;
+      transition: background 0.12s ease, transform 0.08s ease;
+    }
+    .ex-head:active { transform: scale(0.99); background: var(--surface-2); }
+    .ex-thumb {
+      width:48px;height:48px;border-radius:12px;background:var(--surface-2);
+      display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none;
+      border: 1px solid var(--border);
+    }
+    .detail-hint {
+      display:inline-flex; align-items:center; gap:3px;
+      color: var(--accent); font-size: 11.5px; font-weight: 700; margin-top: 6px;
+    }
     .check-btn {
       width: 34px; height: 34px; border-radius: 50%;
       border: 2px solid var(--border); background: transparent;

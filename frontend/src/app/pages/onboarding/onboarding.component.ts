@@ -7,6 +7,7 @@ import { AuthService } from '../../core/services/auth.service';
 const DAY_NAMES = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
 
 const TEMPLATES = [
+  { id: 'full_body', name: 'فل بدي (كامل الجسم)', desc: 'تمرين شامل لكل الجسم في كل يوم نادي' },
   { id: 'ppl', name: 'بوش / بل / ليقز', desc: 'دفع، سحب، أرجل بالتكرار' },
   { id: 'upper_lower', name: 'أبر داون', desc: 'علوي ثم سفلي بالتكرار' },
   { id: 'bro_split', name: 'يوم لكل عضلة', desc: 'صدر، ظهر، أرجل، أكتاف، أذرع' },

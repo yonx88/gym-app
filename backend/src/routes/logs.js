@@ -163,12 +163,18 @@ router.delete('/day-complete', (req, res) => {
   res.json({ ok: true });
 });
 
-// Weekly attendance / timesheet (current week, Sunday -> Saturday)
+// Weekly attendance / timesheet. ?weeksAgo=0 (هذا الأسبوع) أو 1,2,3... للأسابيع السابقة
 router.get('/week', (req, res) => {
+  const weeksAgo = Math.max(0, parseInt(req.query.weeksAgo, 10) || 0);
   const now = new Date();
-  const dow = now.getDay();
-  const sunday = new Date(now);
-  sunday.setDate(now.getDate() - dow);
+  const todayDate = todayStr();
+
+  // أحد الأسبوع المطلوب
+  const ref = new Date(now);
+  ref.setDate(now.getDate() - weeksAgo * 7);
+  const refDow = ref.getDay();
+  const sunday = new Date(ref);
+  sunday.setDate(ref.getDate() - refDow);
 
   const week = [];
   for (let i = 0; i < 7; i++) {
@@ -181,7 +187,7 @@ router.get('/week', (req, res) => {
       .prepare('SELECT * FROM day_completions WHERE user_id = ? AND day_date = ?')
       .get(req.userId, dateStr);
 
-    const isFuture = d > now && dateStr !== todayStr();
+    const isFuture = dateStr > todayDate;
 
     week.push({
       date: dateStr,
@@ -192,14 +198,62 @@ router.get('/week', (req, res) => {
       attended: !!completion,
       calories: completion ? completion.calories_estimate : 0,
       is_future: isFuture,
-      is_today: dateStr === todayStr(),
+      is_today: dateStr === todayDate,
     });
   }
 
   const gymDaysCount = week.filter((d) => d.is_gym_day).length;
   const attendedCount = week.filter((d) => d.attended).length;
+  const startStr = week[0].date;
+  const endStr = week[6].date;
 
-  res.json({ week, gym_days_count: gymDaysCount, attended_count: attendedCount });
+  res.json({
+    week,
+    gym_days_count: gymDaysCount,
+    attended_count: attendedCount,
+    weeks_ago: weeksAgo,
+    week_start: startStr,
+    week_end: endStr,
+    is_current_week: weeksAgo === 0,
+  });
+});
+
+// إحصائيات + بيانات التقويم السنوي (للمربعات الملوّنة)
+router.get('/stats', (req, res) => {
+  const now = new Date();
+  const year = parseInt(req.query.year, 10) || now.getFullYear();
+  const currentMonthPrefix = todayStr().slice(0, 7); // YYYY-MM
+
+  const completions = db
+    .prepare('SELECT day_date, calories_estimate FROM day_completions WHERE user_id = ? ORDER BY day_date')
+    .all(req.userId);
+
+  let monthCount = 0;
+  let yearCount = 0;
+  const days = {}; // date -> calories (لكل يوم حضرته في السنة المطلوبة)
+  const yearsSet = new Set();
+
+  for (const c of completions) {
+    const y = c.day_date.slice(0, 4);
+    yearsSet.add(Number(y));
+    if (c.day_date.slice(0, 7) === currentMonthPrefix) monthCount++;
+    if (Number(y) === year) {
+      yearCount++;
+      days[c.day_date] = c.calories_estimate || 0;
+    }
+  }
+
+  yearsSet.add(now.getFullYear());
+  const years = Array.from(yearsSet).sort((a, b) => b - a);
+
+  res.json({
+    year,
+    years,
+    month_count: monthCount,
+    year_count: yearCount,
+    total_count: completions.length,
+    days,
+  });
 });
 
 module.exports = router;

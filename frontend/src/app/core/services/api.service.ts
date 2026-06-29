@@ -62,6 +62,25 @@ export interface WeekDay {
   is_today: boolean;
 }
 
+export interface WeekResponse {
+  week: WeekDay[];
+  gym_days_count: number;
+  attended_count: number;
+  weeks_ago: number;
+  week_start: string;
+  week_end: string;
+  is_current_week: boolean;
+}
+
+export interface StatsResponse {
+  year: number;
+  years: number[];
+  month_count: number;
+  year_count: number;
+  total_count: number;
+  days: Record<string, number>; // date -> calories
+}
+
 export interface Profile {
   id: number;
   email: string;
@@ -157,12 +176,14 @@ export class ApiService {
   undoFinishDay() {
     return firstValueFrom(this.http.delete(`${API_BASE_URL}/api/logs/day-complete`));
   }
-  getWeek() {
+  getWeek(weeksAgo = 0) {
     return firstValueFrom(
-      this.http.get<{ week: WeekDay[]; gym_days_count: number; attended_count: number }>(
-        `${API_BASE_URL}/api/logs/week`
-      )
+      this.http.get<WeekResponse>(`${API_BASE_URL}/api/logs/week?weeksAgo=${weeksAgo}`)
     );
+  }
+  getStats(year?: number) {
+    const q = year ? `?year=${year}` : '';
+    return firstValueFrom(this.http.get<StatsResponse>(`${API_BASE_URL}/api/logs/stats${q}`));
   }
 
   imageUrl(path: string | null): string {

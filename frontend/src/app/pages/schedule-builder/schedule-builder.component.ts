@@ -5,6 +5,7 @@ import { ApiService, ScheduleDay, LibraryExercise } from '../../core/services/ap
 const CARDIO_MACHINES = ['مشاية', 'دراجة ثابتة', 'إليبتيكال', 'مدرج (Stairmaster)', 'حبل نطر'];
 
 const TEMPLATES = [
+  { id: 'full_body', name: 'فل بدي' },
   { id: 'ppl', name: 'بوش / بل / ليقز' },
   { id: 'upper_lower', name: 'أبر داون' },
   { id: 'bro_split', name: 'يوم لكل عضلة' },
@@ -16,22 +17,32 @@ const TEMPLATES = [
   imports: [FormsModule],
   template: `
     <div class="page">
-      <div class="row-between">
-        <h1 style="font-size:24px;">جدولي</h1>
-        <button class="btn btn-outline btn-sm" (click)="showTemplates.set(!showTemplates())">قالب جاهز</button>
+      <h1 style="font-size:24px;">جدولي</h1>
+      <p class="muted mt-8" style="margin-bottom:14px;">رتّب أيامك وتمارينك زي ما تبي</p>
+
+      <div class="segmented">
+        <button [class.active]="mode() === 'custom'" (click)="mode.set('custom')">تخصيص جدول</button>
+        <button [class.active]="mode() === 'templates'" (click)="mode.set('templates')">قالب جاهز</button>
       </div>
 
-      @if (showTemplates()) {
+      @if (mode() === 'templates') {
         <div class="card mt-16">
           <p class="muted" style="font-size:13px; margin-bottom:10px;">
-            سيتم تعبية التمارين تلقائيًا على أيام النادي الحالية المحددة
+            اختر قالب وبنعبّي التمارين تلقائيًا على أيام النادي المحددة عندك
           </p>
           <div class="chip-row">
             @for (t of templates; track t.id) {
               <button class="chip" (click)="applyTemplate(t.id)">{{ t.name }}</button>
             }
           </div>
+          <p class="muted mt-8" style="font-size:12px;">
+            تلميح: فعّل أيام النادي من تبويب «تخصيص جدول» أول، بعدين طبّق القالب.
+          </p>
         </div>
+      } @else {
+        <p class="muted mt-16" style="font-size:13px;">
+          فعّل المفتاح على أيام النادي، واضغط اليوم عشان تضيف/تعدّل تمارينه.
+        </p>
       }
 
       @if (loading()) {
@@ -122,6 +133,16 @@ const TEMPLATES = [
     </div>
   `,
   styles: [`
+    .segmented {
+      display: flex; gap: 4px; background: var(--surface-2);
+      border: 1px solid var(--border); border-radius: 12px; padding: 4px;
+    }
+    .segmented button {
+      flex: 1; padding: 10px; border: none; background: transparent;
+      color: var(--text-muted); font-weight: 700; font-size: 14px; border-radius: 9px;
+      transition: background 0.12s ease, color 0.12s ease;
+    }
+    .segmented button.active { background: var(--accent); color: #fff; }
     .switch {
       width: 42px; height: 24px; border-radius: 12px; background: var(--surface-2);
       border: 1px solid var(--border); position: relative; flex: none;
@@ -153,7 +174,7 @@ export class ScheduleBuilderComponent implements OnInit {
   days = signal<ScheduleDay[]>([]);
   library = signal<LibraryExercise[]>([]);
   expanded = signal<number | null>(null);
-  showTemplates = signal(false);
+  mode = signal<'custom' | 'templates'>('custom');
 
   newExerciseLibId: Record<number, number | null> = {};
   newExerciseName: Record<number, string> = {};
@@ -229,6 +250,6 @@ export class ScheduleBuilderComponent implements OnInit {
     }
     const res = await this.api.applyTemplate(gymDays, scheduleType);
     this.days.set(res.days);
-    this.showTemplates.set(false);
+    this.mode.set('custom');
   }
 }

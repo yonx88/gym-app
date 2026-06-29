@@ -11,7 +11,17 @@ const TEMPLATE_CYCLES = {
   ppl: ['دفع', 'سحب', 'أرجل'],
   upper_lower: ['علوي', 'سفلي'],
   bro_split: ['صدر', 'ظهر', 'أرجل', 'أكتاف', 'أذرع'],
+  full_body: ['كامل'],
 };
+
+// تمارين افتراضية ليوم "فل بدي" (تمرين كامل للجسم)
+const FULL_BODY_DEFAULTS = [
+  'سكوات',
+  'بنش بريس بار',
+  'تجديف بار',
+  'ضغط عسكري',
+  'ديدليفت رومانية',
+];
 
 // labels that map to one or more library categories, used to auto-fill exercises
 const LABEL_CATEGORY_MAP = {
@@ -27,6 +37,7 @@ const LABEL_CATEGORY_MAP = {
 };
 
 function getDefaultExercises(label, limit = 5) {
+  if (label === 'كامل') return FULL_BODY_DEFAULTS.slice(0, limit);
   const categories = LABEL_CATEGORY_MAP[label] || [];
   if (categories.length === 0) return [];
   const placeholders = categories.map(() => '?').join(',');
